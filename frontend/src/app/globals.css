@@ -24,3 +24,29 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+:root {
+  --ink: #12151a;
+  --panel: #1b2029;
+  --panel-border: #2a313d;
+  --paper: #ecedef;
+  --muted: #8b93a1;
+  --tag-amber: #e8a93a;
+  --tag-amber-strong: #f4c065;
+  --ok: #4fae74;
+  --err: #e2574c;
+}
+
+body {
+  background-color: var(--ink);
+  color: var(--paper);
+}
+
+.font-display {
+  font-family: var(--font-oswald), "Arial Narrow", sans-serif;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.font-mono-tag {
+  font-family: var(--font-plex-mono), "Courier New", monospace;
+}
