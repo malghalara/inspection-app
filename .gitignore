@@ -20,3 +20,5 @@ Thumbs.db
 # IDE
 .vscode/*
 !.vscode/settings.json
+
+backend/uploads/

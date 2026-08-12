@@ -7,11 +7,17 @@ from app.models.answer import Answer
 from app.models.inspection import Inspection
 from app.schemas.answer import AnswerUpsertRequest, AnswerResponse
 from app.schemas.inspection import DomainProgress, InspectionProgressResponse, QuestionWithAnswerResponse
-from app.api.deps import get_current_user  # NOTE: confirm this is the actual name in your deps.py —
-# it should be the dependency used for a logged-in, verified, active user (not admin-only).
-# If yours is named differently (e.g. get_current_active_user), just swap the import/usage below.
+from app.api.deps import get_current_user
 
 router = APIRouter(prefix="/inspection", tags=["inspection"])
+
+
+def is_answered(question: Question, answer: Answer | None) -> bool:
+    if not answer or answer.value is None:
+        return False
+    if question.proof_required and len(answer.proof_files) == 0:
+        return False
+    return True
 
 
 async def get_or_create_inspection(user_id: str) -> Inspection:
@@ -41,9 +47,7 @@ async def get_progress(user: User = Depends(get_current_user)):
         has_critical_no = False
         for q in questions:
             a = answer_map.get(str(q.id))
-            if a and a.value is not None:
-                # TODO (M7): once file uploads exist, proof_required questions should only
-                # count as answered once at least one proof file is attached (FR-6.5).
+            if is_answered(q, a):
                 answered += 1
                 if q.is_critical and a.value == "No":
                     has_critical_no = True
@@ -90,21 +94,25 @@ async def get_domain_questions(domain_id: str, user: User = Depends(get_current_
     answers = await Answer.find(Answer.user_id == user_id, Answer.domain_id == domain_id).to_list()
     answer_map = {a.question_id: a for a in answers}
 
-    return [
-        QuestionWithAnswerResponse(
-            id=str(q.id),
-            title=q.title,
-            domain_id=q.domain_id,
-            options=q.options,
-            is_critical=q.is_critical,
-            proof_required=q.proof_required,
-            order=q.order,
-            reference_code=q.reference_code,
-            regulation_tag=q.regulation_tag,
-            value=(answer_map[str(q.id)].value if str(q.id) in answer_map else None),
+    result = []
+    for q in questions:
+        a = answer_map.get(str(q.id))
+        result.append(
+            QuestionWithAnswerResponse(
+                id=str(q.id),
+                title=q.title,
+                domain_id=q.domain_id,
+                options=q.options,
+                is_critical=q.is_critical,
+                proof_required=q.proof_required,
+                order=q.order,
+                reference_code=q.reference_code,
+                regulation_tag=q.regulation_tag,
+                value=(a.value if a else None),
+                proof_files=(a.proof_files if a else []),
+            )
         )
-        for q in questions
-    ]
+    return result
 
 
 @router.put("/answers", response_model=AnswerResponse)
@@ -156,7 +164,7 @@ async def submit_inspection(user: User = Depends(get_current_user)):
         ).to_list()
         for q in questions:
             a = answer_map.get(str(q.id))
-            if not a or a.value is None:
+            if not is_answered(q, a):
                 any_incomplete = True
             if q.is_critical and a and a.value == "No":
                 any_failed = True

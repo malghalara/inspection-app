@@ -1,5 +1,6 @@
 from pydantic import BaseModel
 from typing import Optional, Literal
+from app.models.answer import ProofFile
 
 
 class DomainProgress(BaseModel):
@@ -29,3 +30,4 @@ class QuestionWithAnswerResponse(BaseModel):
     reference_code: Optional[str] = None
     regulation_tag: Optional[str] = None
     value: Optional[str] = None
+    proof_files: list[ProofFile] = []

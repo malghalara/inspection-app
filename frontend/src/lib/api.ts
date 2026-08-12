@@ -293,6 +293,14 @@ export interface InspectionProgress {
   domains: DomainProgress[];
 }
 
+export interface ProofFile {
+  url: string;
+  filename: string;
+  size_bytes: number;
+  mime_type: string;
+  uploaded_at: string;
+}
+
 export interface QuestionWithAnswer {
   id: string;
   title: string;
@@ -304,6 +312,7 @@ export interface QuestionWithAnswer {
   reference_code: string | null;
   regulation_tag: string | null;
   value: string | null;
+  proof_files: ProofFile[];
 }
 
 export function getInspectionProgress() {
@@ -329,4 +338,29 @@ export function submitInspection() {
 
 export function reopenInspection() {
   return authFetch<{ message: string }>("/api/v1/inspection/reopen", { method: "POST" });
+}
+
+export async function uploadProofFile(questionId: string, file: File) {
+  const formData = new FormData();
+  formData.append("question_id", questionId);
+  formData.append("file", file);
+
+  const res = await fetch(`${API_BASE_URL}/api/v1/uploads/proof`, {
+    method: "POST",
+    headers: currentAccessToken ? { Authorization: `Bearer ${currentAccessToken}` } : {},
+    body: formData,
+  });
+
+  if (!res.ok) {
+    let detail = "Upload failed. Please try again.";
+    try {
+      const body = await res.json();
+      if (typeof body.detail === "string") detail = body.detail;
+    } catch {
+      // not JSON, keep default message
+    }
+    throw new ApiError(res.status, detail);
+  }
+
+  return res.json() as Promise<{ question_id: string; domain_id: string; value: string | null; proof_files: ProofFile[] }>;
 }
