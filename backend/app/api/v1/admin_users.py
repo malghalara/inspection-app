@@ -1,8 +1,10 @@
 from typing import Optional
 from datetime import datetime
+from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from app.models.user import User
+from app.models.inspection import Inspection
 from app.api.deps import get_current_admin
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users"])
@@ -14,6 +16,8 @@ class UserListItem(BaseModel):
     role: str
     is_active: bool
     is_verified: bool
+    inspection_status: Optional[str] = None
+    overall_status: Optional[str] = None
     created_at: datetime
     last_login_at: Optional[datetime] = None
 
@@ -37,9 +41,16 @@ async def list_users(
     role: Optional[str] = Query(None),
     is_active: Optional[bool] = Query(None),
     search: Optional[str] = Query(None),
+    has_inspection: Optional[bool] = Query(None),
+    inspection_status: Optional[str] = Query(None),
+    overall_status: Optional[str] = Query(None),
 ):
     if role is not None and role not in ("user", "admin"):
         raise HTTPException(status_code=400, detail="Invalid role filter")
+    if inspection_status is not None and inspection_status not in ("in_progress", "submitted"):
+        raise HTTPException(status_code=400, detail="Invalid inspection_status filter")
+    if overall_status is not None and overall_status not in ("in_progress", "passed", "failed"):
+        raise HTTPException(status_code=400, detail="Invalid overall_status filter")
 
     query_filters: dict = {}
     if role:
@@ -52,9 +63,30 @@ async def list_users(
             {"email": {"$regex": search, "$options": "i"}},
         ]
 
+    inspection_filters: dict = {}
+    if inspection_status is not None:
+        inspection_filters["status"] = inspection_status
+    if overall_status is not None:
+        inspection_filters["overall_status"] = overall_status
+
+    if has_inspection or inspection_filters:
+        inspections = await Inspection.find(inspection_filters).to_list()
+        if not inspections:
+            return UserListResponse(items=[], total=0, page=page, page_size=page_size)
+
+        user_ids = [ObjectId(i.user_id) for i in inspections if ObjectId.is_valid(i.user_id)]
+        if not user_ids:
+            return UserListResponse(items=[], total=0, page=page, page_size=page_size)
+
+        query_filters["_id"] = {"$in": user_ids}
+
     total = await User.find(query_filters).count()
     skip = (page - 1) * page_size
     users = await User.find(query_filters).sort(-User.created_at).skip(skip).limit(page_size).to_list()
+
+    user_ids_str = [str(u.id) for u in users]
+    inspections = await Inspection.find({"user_id": {"$in": user_ids_str}}).to_list() if users else []
+    inspection_map = {i.user_id: i for i in inspections}
 
     items = [
         UserListItem(
@@ -64,6 +96,8 @@ async def list_users(
             role=u.role,
             is_active=u.is_active,
             is_verified=u.is_verified,
+            inspection_status=inspection_map.get(str(u.id)).status if inspection_map.get(str(u.id)) else None,
+            overall_status=inspection_map.get(str(u.id)).overall_status if inspection_map.get(str(u.id)) else None,
             created_at=u.created_at,
             last_login_at=u.last_login_at,
         )

@@ -19,6 +19,9 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState("");
   const [roleFilter, setRoleFilter] = useState("");
   const [activeFilter, setActiveFilter] = useState("");
+  const [hasInspection, setHasInspection] = useState(false);
+  const [inspectionStatusFilter, setInspectionStatusFilter] = useState("");
+  const [overallStatusFilter, setOverallStatusFilter] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
@@ -52,6 +55,9 @@ export default function AdminUsersPage() {
         role: roleFilter || undefined,
         is_active: activeFilter === "" ? undefined : activeFilter === "true",
         search: search || undefined,
+        has_inspection: hasInspection || undefined,
+        inspection_status: inspectionStatusFilter || undefined,
+        overall_status: overallStatusFilter || undefined,
       });
       setUsers(result.items);
       setTotal(result.total);
@@ -60,7 +66,7 @@ export default function AdminUsersPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, roleFilter, activeFilter, search]);
+  }, [page, roleFilter, activeFilter, search, hasInspection, inspectionStatusFilter, overallStatusFilter]);
 
   useEffect(() => {
     if (accessToken && role === "admin") {
@@ -137,6 +143,45 @@ export default function AdminUsersPage() {
             <option value="true">Active</option>
             <option value="false">Deactivated</option>
           </select>
+          <select
+            value={inspectionStatusFilter}
+            onChange={(e) => {
+              setPage(1);
+              setInspectionStatusFilter(e.target.value);
+            }}
+            className="rounded-lg border px-3 py-2 text-sm outline-none"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+          >
+            <option value="">Any inspection status</option>
+            <option value="in_progress">In Progress</option>
+            <option value="submitted">Submitted</option>
+          </select>
+          <select
+            value={overallStatusFilter}
+            onChange={(e) => {
+              setPage(1);
+              setOverallStatusFilter(e.target.value);
+            }}
+            className="rounded-lg border px-3 py-2 text-sm outline-none"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
+          >
+            <option value="">Any overall status</option>
+            <option value="in_progress">In Progress</option>
+            <option value="passed">Passed</option>
+            <option value="failed">Failed</option>
+          </select>
+          <label className="flex items-center gap-2 text-sm" style={{ color: "var(--text)" }}>
+            <input
+              type="checkbox"
+              checked={hasInspection}
+              onChange={(e) => {
+                setPage(1);
+                setHasInspection(e.target.checked);
+              }}
+              className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary"
+            />
+            Has inspection
+          </label>
         </div>
 
         {actionError && (
@@ -160,6 +205,8 @@ export default function AdminUsersPage() {
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Email</th>
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Role</th>
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Verified</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Inspection</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Overall</th>
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Status</th>
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Joined</th>
                   <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Actions</th>
@@ -183,6 +230,12 @@ export default function AdminUsersPage() {
                     </td>
                     <td className="px-4 py-3" style={{ color: u.is_verified ? "var(--success)" : "var(--text-muted)" }}>
                       {u.is_verified ? "Yes" : "No"}
+                    </td>
+                    <td className="px-4 py-3" style={{ color: u.inspection_status ? "var(--text)" : "var(--text-muted)" }}>
+                      {u.inspection_status ?? "—"}
+                    </td>
+                    <td className="px-4 py-3" style={{ color: u.overall_status ? "var(--text)" : "var(--text-muted)" }}>
+                      {u.overall_status ?? "—"}
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -223,7 +276,7 @@ export default function AdminUsersPage() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+                    <td colSpan={9} className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
                       No users match these filters.
                     </td>
                   </tr>

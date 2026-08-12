@@ -121,6 +121,8 @@ export interface UserListItem {
   role: string;
   is_active: boolean;
   is_verified: boolean;
+  inspection_status?: string;
+  overall_status?: string;
   created_at: string;
   last_login_at: string | null;
 }
@@ -138,6 +140,9 @@ export interface ListUsersParams {
   role?: string;
   is_active?: boolean;
   search?: string;
+  has_inspection?: boolean;
+  inspection_status?: string;
+  overall_status?: string;
 }
 
 export function listUsers(params: ListUsersParams = {}) {
@@ -147,6 +152,9 @@ export function listUsers(params: ListUsersParams = {}) {
   if (params.role) query.set("role", params.role);
   if (params.is_active !== undefined) query.set("is_active", String(params.is_active));
   if (params.search) query.set("search", params.search);
+  if (params.has_inspection !== undefined) query.set("has_inspection", String(params.has_inspection));
+  if (params.inspection_status) query.set("inspection_status", params.inspection_status);
+  if (params.overall_status) query.set("overall_status", params.overall_status);
 
   const qs = query.toString();
   return authFetch<UserListResponse>(`/api/v1/admin/users${qs ? `?${qs}` : ""}`);
