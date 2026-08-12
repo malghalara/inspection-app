@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { AdminNav } from "@/components/admin/AdminNav";
 import { listUsers, updateUserRole, updateUserActive, ApiError, type UserListItem } from "@/lib/api";
@@ -252,7 +253,7 @@ export default function AdminUsersPage() {
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
-                      <div className="flex gap-2">
+                      <div className="flex flex-wrap gap-2">
                         <button
                           onClick={() => handleRoleToggle(u)}
                           className="rounded-lg border px-2 py-1 text-xs font-medium"
@@ -270,6 +271,11 @@ export default function AdminUsersPage() {
                         >
                           {u.is_active ? "Deactivate" : "Activate"}
                         </button>
+                        {u.inspection_status ? (
+                          <Link href={`/users/${u.id}`} className="rounded-lg border px-2 py-1 text-xs font-medium" style={{ borderColor: "var(--border)", color: "var(--text)" }}>
+                            Review
+                          </Link>
+                        ) : null}
                       </div>
                     </td>
                   </tr>

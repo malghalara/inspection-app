@@ -4,7 +4,11 @@ from bson import ObjectId
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from app.models.user import User
+from app.models.domain import Domain
+from app.models.question import Question
+from app.models.answer import Answer
 from app.models.inspection import Inspection
+from app.schemas.inspection import AdminUserSubmissionResponse
 from app.api.deps import get_current_admin
 
 router = APIRouter(prefix="/admin/users", tags=["admin-users"])
@@ -105,6 +109,58 @@ async def list_users(
     ]
 
     return UserListResponse(items=items, total=total, page=page, page_size=page_size)
+
+@router.get("/{user_id}/inspection", response_model=AdminUserSubmissionResponse)
+async def get_user_inspection_submission(user_id: str, admin: User = Depends(get_current_admin)):
+    user = await User.get(user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    inspection = await Inspection.find_one(Inspection.user_id == user_id)
+    if not inspection:
+        raise HTTPException(status_code=404, detail="Inspection not found for user")
+
+    domains = await Domain.find(Domain.is_active == True).sort(Domain.order).to_list()
+    questions = await Question.find(Question.is_active == True).sort(Question.order).to_list()
+    answers = await Answer.find(Answer.user_id == user_id).to_list()
+    answer_map = {a.question_id: a for a in answers}
+
+    domains_payload = []
+    for domain in domains:
+        domain_questions = [q for q in questions if q.domain_id == str(domain.id)]
+        question_payload = [
+            {
+                "id": str(q.id),
+                "title": q.title,
+                "options": q.options,
+                "is_critical": q.is_critical,
+                "proof_required": q.proof_required,
+                "order": q.order,
+                "reference_code": q.reference_code,
+                "regulation_tag": q.regulation_tag,
+                "value": answer_map.get(str(q.id)).value if answer_map.get(str(q.id)) else None,
+                "proof_files": answer_map.get(str(q.id)).proof_files if answer_map.get(str(q.id)) else [],
+            }
+            for q in domain_questions
+        ]
+        domains_payload.append(
+            {
+                "domain_id": str(domain.id),
+                "title": domain.title,
+                "order": domain.order,
+                "passing_criteria_percent": domain.passing_criteria_percent,
+                "questions": question_payload,
+            }
+        )
+
+    return AdminUserSubmissionResponse(
+        user_id=str(user.id),
+        user_name=user.name,
+        user_email=user.email,
+        inspection_status=inspection.status,
+        overall_status=inspection.overall_status,
+        domains=domains_payload,
+    )
 
 @router.patch("/{user_id}/role")
 async def update_role(user_id: str, payload: RoleUpdateRequest, admin: User = Depends(get_current_admin)):

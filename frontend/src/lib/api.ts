@@ -1,4 +1,4 @@
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+export const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
 export class ApiError extends Error {
   status: number;
@@ -134,6 +134,36 @@ export interface UserListResponse {
   page_size: number;
 }
 
+export interface AdminQuestionSubmission {
+  id: string;
+  title: string;
+  options: string[];
+  is_critical: boolean;
+  proof_required: boolean;
+  order: number;
+  reference_code: string | null;
+  regulation_tag: string | null;
+  value: string | null;
+  proof_files: ProofFile[];
+}
+
+export interface AdminDomainSubmission {
+  domain_id: string;
+  title: string;
+  order: number;
+  passing_criteria_percent: number;
+  questions: AdminQuestionSubmission[];
+}
+
+export interface AdminUserSubmissionResponse {
+  user_id: string;
+  user_name: string;
+  user_email: string;
+  inspection_status: "in_progress" | "submitted";
+  overall_status: "in_progress" | "passed" | "failed";
+  domains: AdminDomainSubmission[];
+}
+
 export interface ListUsersParams {
   page?: number;
   page_size?: number;
@@ -158,6 +188,10 @@ export function listUsers(params: ListUsersParams = {}) {
 
   const qs = query.toString();
   return authFetch<UserListResponse>(`/api/v1/admin/users${qs ? `?${qs}` : ""}`);
+}
+
+export function getUserInspectionSubmission(userId: string) {
+  return authFetch<AdminUserSubmissionResponse>(`/api/v1/admin/users/${encodeURIComponent(userId)}/inspection`);
 }
 
 export function updateUserRole(userId: string, role: string) {
