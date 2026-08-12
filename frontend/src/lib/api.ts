@@ -284,7 +284,11 @@ export interface DomainProgress {
   passing_criteria_percent: number;
   answered_count: number;
   total_count: number;
-  domain_status: "in_progress" | "failed" | "complete";
+  yes_count: number;
+  no_count: number;
+  na_count: number;
+  score_percent: number;
+  domain_status: "in_progress" | "passed" | "failed";
 }
 
 export interface InspectionProgress {

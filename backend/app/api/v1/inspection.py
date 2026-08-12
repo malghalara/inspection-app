@@ -28,38 +28,57 @@ async def get_or_create_inspection(user_id: str) -> Inspection:
     return inspection
 
 
-@router.get("/progress", response_model=InspectionProgressResponse)
-async def get_progress(user: User = Depends(get_current_user)):
-    user_id = str(user.id)
-    inspection = await get_or_create_inspection(user_id)
-
+async def compute_domain_progress(user_id: str) -> list[DomainProgress]:
+    """
+    FR-8.1/8.2 scoring engine. Computed live on every call (FR-8.4 option (a)) —
+    no cached projection, so results are always consistent with the current
+    domains/questions/answers state, at the cost of recomputing on every read.
+    """
     domains = await Domain.find(Domain.is_active == True).sort(Domain.order).to_list()
     answers = await Answer.find(Answer.user_id == user_id).to_list()
     answer_map = {a.question_id: a for a in answers}
 
-    domain_progress: list[DomainProgress] = []
+    result: list[DomainProgress] = []
     for d in domains:
         questions = await Question.find(
             Question.domain_id == str(d.id), Question.is_active == True
         ).to_list()
+
         total = len(questions)
         answered = 0
+        yes_count = 0
+        no_count = 0
+        na_count = 0
         has_critical_no = False
+
         for q in questions:
             a = answer_map.get(str(q.id))
             if is_answered(q, a):
                 answered += 1
-                if q.is_critical and a.value == "No":
-                    has_critical_no = True
+                if a.value == "Yes":
+                    yes_count += 1
+                elif a.value == "No":
+                    no_count += 1
+                    if q.is_critical:
+                        has_critical_no = True
+                elif a.value == "N/A":
+                    na_count += 1
 
+        applicable = total - na_count
+        # FR-8.1: guard divide-by-zero when every question is N/A -> treat as 100%
+        score_percent = 100.0 if applicable <= 0 else round((yes_count / applicable) * 100, 1)
+
+        # FR-8.2 precedence
         if has_critical_no:
             status = "failed"
         elif answered < total:
             status = "in_progress"
+        elif score_percent >= d.passing_criteria_percent:
+            status = "passed"
         else:
-            status = "complete"  # real pass/fail % scoring is M8
+            status = "failed"
 
-        domain_progress.append(
+        result.append(
             DomainProgress(
                 domain_id=str(d.id),
                 title=d.title,
@@ -67,11 +86,29 @@ async def get_progress(user: User = Depends(get_current_user)):
                 passing_criteria_percent=d.passing_criteria_percent,
                 answered_count=answered,
                 total_count=total,
+                yes_count=yes_count,
+                no_count=no_count,
+                na_count=na_count,
+                score_percent=score_percent,
                 domain_status=status,
             )
         )
+    return result
 
-    overall_status = inspection.overall_status if inspection.status == "submitted" else "in_progress"
+
+@router.get("/progress", response_model=InspectionProgressResponse)
+async def get_progress(user: User = Depends(get_current_user)):
+    user_id = str(user.id)
+    inspection = await get_or_create_inspection(user_id)
+    domain_progress = await compute_domain_progress(user_id)
+
+    # FR-8.3
+    if any(d.domain_status == "failed" for d in domain_progress):
+        overall_status = "failed"
+    elif all(d.domain_status == "passed" for d in domain_progress):
+        overall_status = "passed"
+    else:
+        overall_status = "in_progress"
 
     return InspectionProgressResponse(
         inspection_status=inspection.status,
@@ -151,32 +188,20 @@ async def upsert_answer(payload: AnswerUpsertRequest, user: User = Depends(get_c
 async def submit_inspection(user: User = Depends(get_current_user)):
     user_id = str(user.id)
     inspection = await get_or_create_inspection(user_id)
+    domain_progress = await compute_domain_progress(user_id)
 
-    domains = await Domain.find(Domain.is_active == True).to_list()
-    answers = await Answer.find(Answer.user_id == user_id).to_list()
-    answer_map = {a.question_id: a for a in answers}
-
-    any_incomplete = False
-    any_failed = False
-    for d in domains:
-        questions = await Question.find(
-            Question.domain_id == str(d.id), Question.is_active == True
-        ).to_list()
-        for q in questions:
-            a = answer_map.get(str(q.id))
-            if not is_answered(q, a):
-                any_incomplete = True
-            if q.is_critical and a and a.value == "No":
-                any_failed = True
-
-    if any_incomplete:
+    if any(d.answered_count < d.total_count for d in domain_progress):
         raise HTTPException(status_code=400, detail="All questions must be answered before final submission")
+
+    # FR-8.3
+    if any(d.domain_status == "failed" for d in domain_progress):
+        overall_status = "failed"
+    else:
+        overall_status = "passed"
 
     inspection.status = "submitted"
     inspection.submitted_at = datetime.utcnow()
-    # TODO (M8): replace this critical-fail-only check with real percentage-based
-    # domain/overall scoring per FR-8.1-8.3 once the scoring engine is built.
-    inspection.overall_status = "failed" if any_failed else "passed"
+    inspection.overall_status = overall_status
     inspection.updated_at = datetime.utcnow()
     await inspection.save()
 

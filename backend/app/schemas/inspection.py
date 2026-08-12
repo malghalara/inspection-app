@@ -10,7 +10,11 @@ class DomainProgress(BaseModel):
     passing_criteria_percent: int
     answered_count: int
     total_count: int
-    domain_status: Literal["in_progress", "failed", "complete"]
+    yes_count: int
+    no_count: int
+    na_count: int
+    score_percent: float
+    domain_status: Literal["in_progress", "passed", "failed"]
 
 
 class InspectionProgressResponse(BaseModel):

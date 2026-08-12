@@ -35,22 +35,19 @@ export default function InspectionPage() {
     if (!accessToken) router.replace("/login");
   }, [isInitialized, accessToken, router]);
 
-  const fetchProgress = useCallback(async () => {
-    setLoadingProgress(true);
-    setError(null);
-    try {
-      const result = await getInspectionProgress();
-      setProgress(result);
-      if (!activeDomainId && result.domains.length > 0) {
-        setActiveDomainId(result.domains[0].domain_id);
-      }
-    } catch (err) {
-      setError(err instanceof ApiError ? err.message : "Failed to load inspection.");
-    } finally {
-      setLoadingProgress(false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  const fetchProgress = useCallback(async (showFullLoader = true) => {
+  if (showFullLoader) setLoadingProgress(true);
+  setError(null);
+  try {
+    const result = await getInspectionProgress();
+    setProgress(result);
+    setActiveDomainId((prev) => prev ?? result.domains[0]?.domain_id ?? null);
+  } catch (err) {
+    setError(err instanceof ApiError ? err.message : "Failed to load inspection.");
+  } finally {
+    if (showFullLoader) setLoadingProgress(false);
+  }
+}, []);
 
   useEffect(() => {
     if (accessToken) fetchProgress();
@@ -80,7 +77,7 @@ export default function InspectionPage() {
     setQuestions((qs) => qs.map((q) => (q.id === questionId ? { ...q, value } : q)));
     try {
       await upsertAnswer(questionId, value);
-      await fetchProgress();
+      await fetchProgress(false);
     } catch (err) {
       setQuestions(prev);
       setError(err instanceof ApiError ? err.message : "Failed to save answer.");
@@ -95,7 +92,7 @@ export default function InspectionPage() {
       setQuestions((qs) =>
         qs.map((q) => (q.id === questionId ? { ...q, proof_files: result.proof_files } : q))
       );
-      await fetchProgress();
+      await fetchProgress(false);
     } catch (err) {
       setError(err instanceof ApiError ? err.message : "Upload failed.");
     } finally {
@@ -213,7 +210,7 @@ export default function InspectionPage() {
                       color: d.domain_status === "failed" ? "var(--critical-text)" : "var(--success)",
                     }}
                   >
-                    {d.domain_status === "failed" ? "Failed" : "Complete"} — {d.answered_count}/{d.total_count}
+                    {d.domain_status === "failed" ? "Failed" : "Passed"} — {d.score_percent}% (needs {d.passing_criteria_percent}%)
                   </span>
                 </div>
               ))}
