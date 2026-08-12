@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { requestPasswordReset, verifyPasswordResetOtp, ApiError } from "@/lib/api";
 
 type Phase = "email" | "otp" | "token";
@@ -51,14 +51,18 @@ export default function ForgotPasswordPage() {
     router.push(`/reset-password?token=${encodeURIComponent(manualToken.trim())}`);
   }
 
+  const title = phase === "email" ? "Forgot password" : phase === "otp" ? "Enter the code" : "Enter reset link";
+  const subtitle =
+    phase === "email" ? "We'll send a reset code to your email." : phase === "otp" ? "Confirm it's you." : "Almost done.";
+
   return (
-    <AuthCard
-      eyebrow={phase === "email" ? "Reset password" : phase === "otp" ? "Confirm it's you" : "Almost done"}
-      title={phase === "email" ? "Forgot password" : phase === "otp" ? "Enter the code" : "Enter reset link"}
+    <AuthShell
+      title={title}
+      subtitle={subtitle}
       footer={
         <>
           Remembered it?{" "}
-          <Link href="/login" className="underline" style={{ color: "var(--tag-amber)" }}>
+          <Link href="/login" className="font-medium" style={{ color: "var(--primary)" }}>
             Back to login
           </Link>
         </>
@@ -67,7 +71,7 @@ export default function ForgotPasswordPage() {
       {phase === "email" && (
         <form onSubmit={handleRequestSubmit} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="email" className="text-xs" style={{ color: "var(--muted)" }}>
+            <label htmlFor="email" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               Email
             </label>
             <input
@@ -76,13 +80,13 @@ export default function ForgotPasswordPage() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-              style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+              className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text)" }}
             />
           </div>
 
           {error && (
-            <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+            <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
               {error}
             </div>
           )}
@@ -90,8 +94,8 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-            style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+            className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+            style={{ backgroundColor: "var(--dark)" }}
           >
             {loading ? "Sending…" : "Send reset code"}
           </button>
@@ -100,12 +104,12 @@ export default function ForgotPasswordPage() {
 
       {phase === "otp" && (
         <form onSubmit={handleOtpSubmit} className="flex flex-col gap-4">
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
-            If an account exists for <span style={{ color: "var(--paper)" }}>{email}</span>, a 6-digit code was sent. Check your backend terminal (dev mode).
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
+            If an account exists for <span style={{ color: "var(--text)" }}>{email}</span>, a 6-digit code was sent. Check your backend terminal (dev mode).
           </p>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="otp" className="text-xs" style={{ color: "var(--muted)" }}>
+            <label htmlFor="otp" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               6-digit code
             </label>
             <input
@@ -117,14 +121,14 @@ export default function ForgotPasswordPage() {
               required
               value={otp}
               onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-              className="font-mono-tag w-full rounded-sm border bg-transparent px-3 py-2 text-center text-lg tracking-[0.5em] outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-              style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+              className="font-mono-tag w-full rounded-lg border px-3 py-2.5 text-center text-lg tracking-[0.5em] outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text)" }}
               placeholder="000000"
             />
           </div>
 
           {error && (
-            <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+            <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
               {error}
             </div>
           )}
@@ -132,8 +136,8 @@ export default function ForgotPasswordPage() {
           <button
             type="submit"
             disabled={loading}
-            className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-            style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+            className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+            style={{ backgroundColor: "var(--dark)" }}
           >
             {loading ? "Checking…" : "Verify code"}
           </button>
@@ -142,16 +146,16 @@ export default function ForgotPasswordPage() {
 
       {phase === "token" && (
         <form onSubmit={handleTokenSubmit} className="flex flex-col gap-4">
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             A reset link was sent to your email. In dev mode, copy the{" "}
-            <span className="font-mono-tag" style={{ color: "var(--paper)" }}>
+            <span className="font-mono-tag" style={{ color: "var(--text)" }}>
               token=
             </span>{" "}
             value from the link logged in your backend terminal, and paste it below.
           </p>
 
           <div className="flex flex-col gap-1.5">
-            <label htmlFor="token" className="text-xs" style={{ color: "var(--muted)" }}>
+            <label htmlFor="token" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               Reset token
             </label>
             <input
@@ -160,21 +164,21 @@ export default function ForgotPasswordPage() {
               required
               value={manualToken}
               onChange={(e) => setManualToken(e.target.value)}
-              className="font-mono-tag w-full rounded-sm border bg-transparent px-3 py-2 text-xs outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-              style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+              className="font-mono-tag w-full rounded-lg border px-3 py-2.5 text-xs outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text)" }}
               placeholder="Paste the token from the reset link"
             />
           </div>
 
           <button
             type="submit"
-            className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition"
-            style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+            className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition"
+            style={{ backgroundColor: "var(--dark)" }}
           >
             Continue
           </button>
         </form>
       )}
-    </AuthCard>
+    </AuthShell>
   );
 }

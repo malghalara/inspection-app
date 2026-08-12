@@ -2,6 +2,7 @@ from datetime import datetime
 from fastapi import APIRouter, Depends, HTTPException, Query
 from app.models.user import User
 from app.models.domain import Domain
+from app.models.question import Question
 from app.schemas.domain import DomainCreateRequest, DomainUpdateRequest, DomainResponse, ReorderRequest
 from app.api.deps import get_current_admin
 
@@ -74,9 +75,15 @@ async def delete_domain(domain_id: str, force: bool = Query(False), admin: User 
     if not domain:
         raise HTTPException(status_code=404, detail="Domain not found")
 
-    # TODO (M5): once the Question model exists, block deletion with 409 if this
-    # domain has any associated questions, unless force=true (per FR-4.2). Not yet
-    # implemented because M5 (Question Management) hasn't been built yet.
+    if not force:
+        question_count = await Question.find(
+            Question.domain_id == domain_id, Question.is_active == True
+        ).count()
+        if question_count > 0:
+            raise HTTPException(
+                status_code=409,
+                detail=f"Domain has {question_count} active question(s). Pass ?force=true to delete anyway.",
+            )
 
     domain.is_active = False
     domain.updated_at = datetime.utcnow()

@@ -18,15 +18,14 @@ export default function DashboardPage() {
   if (!isInitialized || !accessToken) return null;
 
   return (
-    <div
-      className="flex min-h-screen flex-col items-center justify-center gap-4 px-4"
-      style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}
-    >
-      <p className="font-display text-sm" style={{ color: "var(--tag-amber)" }}>
+    <div className="flex min-h-screen flex-col items-center justify-center gap-4 px-4" style={{ backgroundColor: "var(--bg)" }}>
+      <p className="text-sm font-medium" style={{ color: "var(--primary)" }}>
         Signed in
       </p>
-      <h1 className="font-display text-2xl">You&apos;re authenticated</h1>
-      <p className="max-w-sm text-center text-sm" style={{ color: "var(--muted)" }}>
+      <h1 className="font-display text-2xl" style={{ color: "var(--text)" }}>
+        You&apos;re authenticated
+      </h1>
+      <p className="max-w-sm text-center text-sm" style={{ color: "var(--text-muted)" }}>
         This is a placeholder confirming the login flow works end to end. The real dashboard gets built in a later phase.
       </p>
       <button
@@ -34,8 +33,8 @@ export default function DashboardPage() {
           await logout();
           router.push("/login");
         }}
-        className="font-display rounded-sm px-4 py-2 text-sm tracking-wide"
-        style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+        className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+        style={{ backgroundColor: "var(--dark)" }}
       >
         Log out
       </button>

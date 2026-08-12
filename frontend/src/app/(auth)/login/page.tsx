@@ -3,7 +3,6 @@
 import { useState, Suspense, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AuthCard } from "@/components/auth/AuthCard";
 import { loginUser, ApiError } from "@/lib/api";
 import { useAuth } from "@/lib/auth-context";
 
@@ -39,32 +38,51 @@ function LoginForm() {
   }
 
   return (
-    <AuthCard
-      eyebrow="Welcome back"
-      title="Log in"
-      footer={
-        <>
-          Need an account?{" "}
-          <Link href="/register" className="underline" style={{ color: "var(--tag-amber)" }}>
-            Register
-          </Link>
-        </>
-      }
+    <div
+      className="w-full max-w-md rounded-2xl border p-8 shadow-sm"
+      style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
     >
+      <div className="mb-6 flex items-center gap-2">
+        <div
+          className="flex h-9 w-9 items-center justify-center rounded-lg text-sm font-bold text-white"
+          style={{ background: "linear-gradient(135deg, #f472b6, #a78bfa, #34d399)" }}
+        >
+          M
+        </div>
+        <span className="font-display text-lg" style={{ color: "var(--text)" }}>
+          Mock Inspection
+        </span>
+      </div>
+
+      <h1 className="font-display mb-1 text-xl" style={{ color: "var(--text)" }}>
+        Log in
+      </h1>
+      <p className="mb-6 text-sm" style={{ color: "var(--text-muted)" }}>
+        Welcome back — enter your details below.
+      </p>
+
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {justVerified && (
-          <div role="status" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--ok)", color: "var(--ok)", backgroundColor: "rgba(79,174,116,0.08)" }}>
+          <div
+            role="status"
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--success-soft-bg)", color: "var(--success)" }}
+          >
             Account verified. You can log in now.
           </div>
         )}
         {justReset && (
-          <div role="status" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--ok)", color: "var(--ok)", backgroundColor: "rgba(79,174,116,0.08)" }}>
+          <div
+            role="status"
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--success-soft-bg)", color: "var(--success)" }}
+          >
             Password updated. Log in with your new password.
           </div>
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="email" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             Email
           </label>
           <input
@@ -73,17 +91,17 @@ function LoginForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center justify-between">
-            <label htmlFor="password" className="text-xs" style={{ color: "var(--muted)" }}>
+            <label htmlFor="password" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               Password
             </label>
-            <Link href="/forgot-password" className="text-xs underline" style={{ color: "var(--muted)" }}>
+            <Link href="/forgot-password" className="text-xs" style={{ color: "var(--primary)" }}>
               Forgot?
             </Link>
           </div>
@@ -93,13 +111,17 @@ function LoginForm() {
             required
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
         </div>
 
         {error && (
-          <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+          <div
+            role="alert"
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}
+          >
             {error}
           </div>
         )}
@@ -107,13 +129,20 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-          style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+          className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+          style={{ backgroundColor: "var(--dark)" }}
         >
           {loading ? "Logging in…" : "Log in"}
         </button>
       </form>
-    </AuthCard>
+
+      <p className="mt-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
+        Need an account?{" "}
+        <Link href="/register" className="font-medium" style={{ color: "var(--primary)" }}>
+          Register
+        </Link>
+      </p>
+    </div>
   );
 }
 

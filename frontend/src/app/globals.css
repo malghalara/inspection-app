@@ -12,39 +12,38 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
-
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
-}
 :root {
-  --ink: #12151a;
-  --panel: #1b2029;
-  --panel-border: #2a313d;
-  --paper: #ecedef;
-  --muted: #8b93a1;
-  --tag-amber: #e8a93a;
-  --tag-amber-strong: #f4c065;
-  --ok: #4fae74;
-  --err: #e2574c;
+  --bg: #f7f7fa;
+  --surface: #ffffff;
+  --border: #e5e7eb;
+  --text: #14171a;
+  --text-muted: #6b7280;
+
+  --primary: #7c3aed;
+  --primary-soft-bg: #ede9fe;
+  --primary-soft-text: #6d28d9;
+
+  --critical-bg: #fee2e2;
+  --critical-text: #dc2626;
+
+  --tag-bg: #f3f4f6;
+  --tag-text: #4b5563;
+
+  --success: #16a34a;
+  --success-soft-bg: #dcfce7;
+
+  --dark: #1f2937;
 }
 
 body {
-  background-color: var(--ink);
-  color: var(--paper);
+  background-color: var(--bg);
+  color: var(--text);
 }
 
 .font-display {
-  font-family: var(--font-oswald), "Arial Narrow", sans-serif;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
+  font-family: var(--font-inter), sans-serif;
+  font-weight: 600;
+  letter-spacing: -0.01em;
 }
 
 .font-mono-tag {

@@ -3,7 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { registerUser, ApiError } from "@/lib/api";
 
 export default function RegisterPage() {
@@ -35,13 +35,13 @@ export default function RegisterPage() {
   }
 
   return (
-    <AuthCard
-      eyebrow="Step 1 of 2"
+    <AuthShell
       title="Create account"
+      subtitle="Step 1 of 2 — tell us about you."
       footer={
         <>
           Already registered?{" "}
-          <Link href="/login" className="underline" style={{ color: "var(--tag-amber)" }}>
+          <Link href="/login" className="font-medium" style={{ color: "var(--primary)" }}>
             Log in
           </Link>
         </>
@@ -49,7 +49,7 @@ export default function RegisterPage() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="name" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="name" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             Full name
           </label>
           <input
@@ -59,13 +59,13 @@ export default function RegisterPage() {
             minLength={2}
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="email" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             Email
           </label>
           <input
@@ -74,13 +74,13 @@ export default function RegisterPage() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="password" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             Password
           </label>
           <input
@@ -90,10 +90,10 @@ export default function RegisterPage() {
             minLength={8}
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             At least 8 characters.
           </span>
         </div>
@@ -101,8 +101,8 @@ export default function RegisterPage() {
         {error && (
           <div
             role="alert"
-            className="rounded-sm border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}
           >
             {error}
           </div>
@@ -111,12 +111,12 @@ export default function RegisterPage() {
         <button
           type="submit"
           disabled={loading}
-          className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-          style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+          className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+          style={{ backgroundColor: "var(--dark)" }}
         >
           {loading ? "Creating account…" : "Create account"}
         </button>
       </form>
-    </AuthCard>
+    </AuthShell>
   );
 }

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { verifyAccount, resendVerification, ApiError } from "@/lib/api";
 
 function VerifyForm() {
@@ -51,13 +51,13 @@ function VerifyForm() {
   }
 
   return (
-    <AuthCard
-      eyebrow="Step 2 of 2"
+    <AuthShell
       title="Verify your email"
+      subtitle="Step 2 of 2 — enter the code we sent you."
       footer={
         <>
           Wrong email?{" "}
-          <Link href="/register" className="underline" style={{ color: "var(--tag-amber)" }}>
+          <Link href="/register" className="font-medium" style={{ color: "var(--primary)" }}>
             Start over
           </Link>
         </>
@@ -65,7 +65,7 @@ function VerifyForm() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="email" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="email" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             Email
           </label>
           <input
@@ -74,13 +74,13 @@ function VerifyForm() {
             required
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="otp" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="otp" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             6-digit code
           </label>
           <input
@@ -92,20 +92,20 @@ function VerifyForm() {
             required
             value={otp}
             onChange={(e) => setOtp(e.target.value.replace(/\D/g, ""))}
-            className="font-mono-tag w-full rounded-sm border bg-transparent px-3 py-2 text-center text-lg tracking-[0.5em] outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="font-mono-tag w-full rounded-lg border px-3 py-2.5 text-center text-lg tracking-[0.5em] outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
             placeholder="000000"
           />
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
-            Check your backend terminal for the code (dev mode — emails aren&apos;t actually sent yet).
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
+            Check your backend terminal for the code (dev mode).
           </span>
         </div>
 
         {error && (
           <div
             role="alert"
-            className="rounded-sm border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}
           >
             {error}
           </div>
@@ -113,8 +113,8 @@ function VerifyForm() {
         {notice && (
           <div
             role="status"
-            className="rounded-sm border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--ok)", color: "var(--ok)", backgroundColor: "rgba(79,174,116,0.08)" }}
+            className="rounded-lg px-3 py-2 text-sm"
+            style={{ backgroundColor: "var(--success-soft-bg)", color: "var(--success)" }}
           >
             {notice}
           </div>
@@ -123,8 +123,8 @@ function VerifyForm() {
         <button
           type="submit"
           disabled={loading}
-          className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-          style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+          className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+          style={{ backgroundColor: "var(--dark)" }}
         >
           {loading ? "Verifying…" : "Verify account"}
         </button>
@@ -133,13 +133,13 @@ function VerifyForm() {
           type="button"
           onClick={handleResend}
           disabled={resendCooldown > 0}
-          className="text-sm underline disabled:opacity-50 disabled:no-underline"
-          style={{ color: "var(--muted)" }}
+          className="text-sm disabled:opacity-50"
+          style={{ color: "var(--primary)" }}
         >
           {resendCooldown > 0 ? `Resend code in ${resendCooldown}s` : "Resend code"}
         </button>
       </form>
-    </AuthCard>
+    </AuthShell>
   );
 }
 

@@ -3,7 +3,7 @@
 import { useState, Suspense, type FormEvent } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { AuthCard } from "@/components/auth/AuthCard";
+import { AuthShell } from "@/components/auth/AuthShell";
 import { confirmPasswordReset, ApiError } from "@/lib/api";
 
 function ResetPasswordForm() {
@@ -40,13 +40,13 @@ function ResetPasswordForm() {
   }
 
   return (
-    <AuthCard
-      eyebrow="Reset password"
+    <AuthShell
       title="Choose a new password"
+      subtitle="Reset password"
       footer={
         <>
           Changed your mind?{" "}
-          <Link href="/login" className="underline" style={{ color: "var(--tag-amber)" }}>
+          <Link href="/login" className="font-medium" style={{ color: "var(--primary)" }}>
             Back to login
           </Link>
         </>
@@ -54,7 +54,7 @@ function ResetPasswordForm() {
     >
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         {!token && (
-          <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+          <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             No reset token found in the URL. Go back to{" "}
             <Link href="/forgot-password" className="underline">
               Forgot password
@@ -64,7 +64,7 @@ function ResetPasswordForm() {
         )}
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="newPassword" className="text-xs" style={{ color: "var(--muted)" }}>
+          <label htmlFor="newPassword" className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
             New password
           </label>
           <input
@@ -74,16 +74,16 @@ function ResetPasswordForm() {
             minLength={8}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
-            className="w-full rounded-sm border bg-transparent px-3 py-2 text-sm outline-none transition focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="w-full rounded-lg border px-3 py-2.5 text-sm outline-none transition focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", color: "var(--text)" }}
           />
-          <span className="text-xs" style={{ color: "var(--muted)" }}>
+          <span className="text-xs" style={{ color: "var(--text-muted)" }}>
             At least 8 characters.
           </span>
         </div>
 
         {error && (
-          <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+          <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             {error}
           </div>
         )}
@@ -91,13 +91,13 @@ function ResetPasswordForm() {
         <button
           type="submit"
           disabled={loading || !token}
-          className="font-display w-full rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-          style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+          className="w-full rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+          style={{ backgroundColor: "var(--dark)" }}
         >
           {loading ? "Updating…" : "Update password"}
         </button>
       </form>
-    </AuthCard>
+    </AuthShell>
   );
 }
 

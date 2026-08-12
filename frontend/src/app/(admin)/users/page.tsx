@@ -2,8 +2,8 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
-import { AdminNav } from "@/components/admin/AdminNav";
 import { useAuth } from "@/lib/auth-context";
+import { AdminNav } from "@/components/admin/AdminNav";
 import { listUsers, updateUserRole, updateUserActive, ApiError, type UserListItem } from "@/lib/api";
 
 const PAGE_SIZE = 20;
@@ -24,7 +24,7 @@ export default function AdminUsersPage() {
   const [actionError, setActionError] = useState<string | null>(null);
 
   useEffect(() => {
-    if (!isInitialized) return; // wait until we've actually checked localStorage
+    if (!isInitialized) return;
     if (accessToken === null) {
       router.replace("/login");
       return;
@@ -94,13 +94,13 @@ export default function AdminUsersPage() {
   if (!isInitialized || !accessToken || role !== "admin") return null;
 
   return (
-    <div className="min-h-screen px-4 py-10" style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}>
+    <div className="px-6 py-8">
       <div className="mx-auto max-w-5xl">
-        <p className="font-display text-xs" style={{ color: "var(--tag-amber)" }}>
-          Admin
-        </p>
         <AdminNav />
-        <h1 className="font-display mb-6 text-2xl">User Management</h1>
+
+        <h1 className="font-display mb-6 text-2xl" style={{ color: "var(--text)" }}>
+          User Management
+        </h1>
 
         <div className="mb-4 flex flex-wrap gap-3">
           <input
@@ -108,8 +108,8 @@ export default function AdminUsersPage() {
             placeholder="Search name or email…"
             value={searchInput}
             onChange={(e) => setSearchInput(e.target.value)}
-            className="rounded-sm border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--tag-amber)]"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
           />
           <select
             value={roleFilter}
@@ -117,12 +117,12 @@ export default function AdminUsersPage() {
               setPage(1);
               setRoleFilter(e.target.value);
             }}
-            className="rounded-sm border bg-transparent px-3 py-2 text-sm outline-none"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="rounded-lg border px-3 py-2 text-sm outline-none"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
           >
-            <option value="" style={{ color: "black" }}>All roles</option>
-            <option value="user" style={{ color: "black" }}>User</option>
-            <option value="admin" style={{ color: "black" }}>Admin</option>
+            <option value="">All roles</option>
+            <option value="user">User</option>
+            <option value="admin">Admin</option>
           </select>
           <select
             value={activeFilter}
@@ -130,80 +130,90 @@ export default function AdminUsersPage() {
               setPage(1);
               setActiveFilter(e.target.value);
             }}
-            className="rounded-sm border bg-transparent px-3 py-2 text-sm outline-none"
-            style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+            className="rounded-lg border px-3 py-2 text-sm outline-none"
+            style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)", color: "var(--text)" }}
           >
-            <option value="" style={{ color: "black" }}>All statuses</option>
-            <option value="true" style={{ color: "black" }}>Active</option>
-            <option value="false" style={{ color: "black" }}>Deactivated</option>
+            <option value="">All statuses</option>
+            <option value="true">Active</option>
+            <option value="false">Deactivated</option>
           </select>
         </div>
 
         {actionError && (
-          <div role="alert" className="mb-4 rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+          <div role="alert" className="mb-4 rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             {actionError}
           </div>
         )}
 
         {loading ? (
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Loading…</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</p>
         ) : error ? (
-          <div role="alert" className="rounded-sm border px-3 py-2 text-sm" style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}>
+          <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             {error}
           </div>
         ) : (
-          <div className="overflow-x-auto rounded-sm border" style={{ borderColor: "var(--panel-border)" }}>
+          <div className="overflow-x-auto rounded-2xl border shadow-sm" style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}>
             <table className="w-full text-left text-sm">
               <thead>
-                <tr style={{ backgroundColor: "var(--panel)" }}>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Name</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Email</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Role</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Verified</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Status</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Joined</th>
-                  <th className="font-display px-4 py-3 text-xs" style={{ color: "var(--muted)" }}>Actions</th>
+                <tr style={{ backgroundColor: "var(--tag-bg)" }}>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Name</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Email</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Role</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Verified</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Status</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Joined</th>
+                  <th className="px-4 py-3 text-xs font-medium" style={{ color: "var(--text-muted)" }}>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {users.map((u) => (
-                  <tr key={u.id} className="border-t" style={{ borderColor: "var(--panel-border)" }}>
-                    <td className="px-4 py-3">{u.name}</td>
-                    <td className="px-4 py-3" style={{ color: "var(--muted)" }}>{u.email}</td>
+                  <tr key={u.id} className="border-t" style={{ borderColor: "var(--border)" }}>
+                    <td className="px-4 py-3" style={{ color: "var(--text)" }}>{u.name}</td>
+                    <td className="px-4 py-3" style={{ color: "var(--text-muted)" }}>{u.email}</td>
                     <td className="px-4 py-3">
                       <span
-                        className="font-display rounded-sm px-2 py-0.5 text-xs"
+                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
                         style={{
-                          backgroundColor: u.role === "admin" ? "rgba(232,169,58,0.15)" : "transparent",
-                          color: u.role === "admin" ? "var(--tag-amber)" : "var(--muted)",
-                          border: `1px solid ${u.role === "admin" ? "var(--tag-amber)" : "var(--panel-border)"}`,
+                          backgroundColor: u.role === "admin" ? "var(--primary-soft-bg)" : "var(--tag-bg)",
+                          color: u.role === "admin" ? "var(--primary-soft-text)" : "var(--tag-text)",
                         }}
                       >
                         {u.role}
                       </span>
                     </td>
-                    <td className="px-4 py-3" style={{ color: u.is_verified ? "var(--ok)" : "var(--muted)" }}>
+                    <td className="px-4 py-3" style={{ color: u.is_verified ? "var(--success)" : "var(--text-muted)" }}>
                       {u.is_verified ? "Yes" : "No"}
                     </td>
-                    <td className="px-4 py-3" style={{ color: u.is_active ? "var(--ok)" : "var(--err)" }}>
-                      {u.is_active ? "Active" : "Deactivated"}
+                    <td className="px-4 py-3">
+                      <span
+                        className="rounded-full px-2.5 py-0.5 text-xs font-medium"
+                        style={{
+                          backgroundColor: u.is_active ? "var(--success-soft-bg)" : "var(--critical-bg)",
+                          color: u.is_active ? "var(--success)" : "var(--critical-text)",
+                        }}
+                      >
+                        {u.is_active ? "Active" : "Deactivated"}
+                      </span>
                     </td>
-                    <td className="px-4 py-3" style={{ color: "var(--muted)" }}>
+                    <td className="px-4 py-3" style={{ color: "var(--text-muted)" }}>
                       {new Date(u.created_at).toLocaleDateString()}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex gap-2">
                         <button
                           onClick={() => handleRoleToggle(u)}
-                          className="rounded-sm border px-2 py-1 text-xs"
-                          style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+                          className="rounded-lg border px-2 py-1 text-xs font-medium"
+                          style={{ borderColor: "var(--border)", color: "var(--text)" }}
                         >
                           {u.role === "admin" ? "Demote" : "Promote"}
                         </button>
                         <button
                           onClick={() => handleActiveToggle(u)}
-                          className="rounded-sm border px-2 py-1 text-xs"
-                          style={{ borderColor: u.is_active ? "var(--err)" : "var(--ok)", color: u.is_active ? "var(--err)" : "var(--ok)" }}
+                          className="rounded-lg border px-2 py-1 text-xs font-medium"
+                          style={{
+                            borderColor: u.is_active ? "var(--critical-text)" : "var(--success)",
+                            color: u.is_active ? "var(--critical-text)" : "var(--success)",
+                          }}
                         >
                           {u.is_active ? "Deactivate" : "Activate"}
                         </button>
@@ -213,7 +223,7 @@ export default function AdminUsersPage() {
                 ))}
                 {users.length === 0 && (
                   <tr>
-                    <td colSpan={7} className="px-4 py-6 text-center text-sm" style={{ color: "var(--muted)" }}>
+                    <td colSpan={7} className="px-4 py-6 text-center text-sm" style={{ color: "var(--text-muted)" }}>
                       No users match these filters.
                     </td>
                   </tr>
@@ -223,22 +233,22 @@ export default function AdminUsersPage() {
           </div>
         )}
 
-        <div className="mt-4 flex items-center justify-between text-sm" style={{ color: "var(--muted)" }}>
+        <div className="mt-4 flex items-center justify-between text-sm" style={{ color: "var(--text-muted)" }}>
           <span>Page {page} of {totalPages} — {total} total users</span>
           <div className="flex gap-2">
             <button
               disabled={page <= 1}
               onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="rounded-sm border px-3 py-1 disabled:opacity-40"
-              style={{ borderColor: "var(--panel-border)" }}
+              className="rounded-lg border px-3 py-1 disabled:opacity-40"
+              style={{ borderColor: "var(--border)" }}
             >
               Previous
             </button>
             <button
               disabled={page >= totalPages}
               onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="rounded-sm border px-3 py-1 disabled:opacity-40"
-              style={{ borderColor: "var(--panel-border)" }}
+              className="rounded-lg border px-3 py-1 disabled:opacity-40"
+              style={{ borderColor: "var(--border)" }}
             >
               Next
             </button>

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";
 import { AdminNav } from "@/components/admin/AdminNav";
 import {
@@ -111,7 +112,7 @@ export default function AdminDomainsPage() {
 
     const reordered = [...domains];
     [reordered[index], reordered[targetIndex]] = [reordered[targetIndex], reordered[index]];
-    setDomains(reordered); // optimistic update
+    setDomains(reordered);
 
     setActionError(null);
     try {
@@ -119,29 +120,28 @@ export default function AdminDomainsPage() {
       fetchDomains();
     } catch (err) {
       setActionError(err instanceof ApiError ? err.message : "Failed to reorder domains.");
-      fetchDomains(); // revert to server state on failure
+      fetchDomains();
     }
   }
 
   if (!isInitialized || !accessToken || role !== "admin") return null;
 
   return (
-    <div className="min-h-screen px-4 py-10" style={{ backgroundColor: "var(--ink)", color: "var(--paper)" }}>
+    <div className="px-6 py-8">
       <div className="mx-auto max-w-3xl">
         <AdminNav />
 
-        <p className="font-display text-xs" style={{ color: "var(--tag-amber)" }}>
-          Admin
-        </p>
-        <h1 className="font-display mb-6 text-2xl">Domain Management</h1>
+        <h1 className="font-display mb-6 text-2xl" style={{ color: "var(--text)" }}>
+          Domain Management
+        </h1>
 
         <form
           onSubmit={handleCreate}
-          className="mb-8 flex flex-wrap items-end gap-3 rounded-sm border p-4"
-          style={{ borderColor: "var(--panel-border)", backgroundColor: "var(--panel)" }}
+          className="mb-8 flex flex-wrap items-end gap-3 rounded-2xl border p-4 shadow-sm"
+          style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
         >
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs" style={{ color: "var(--muted)" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               New domain title
             </label>
             <input
@@ -149,12 +149,12 @@ export default function AdminDomainsPage() {
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               placeholder="e.g. Safe"
-              className="rounded-sm border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--tag-amber)]"
-              style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+              className="rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text)" }}
             />
           </div>
           <div className="flex flex-col gap-1.5">
-            <label className="text-xs" style={{ color: "var(--muted)" }}>
+            <label className="text-xs font-medium" style={{ color: "var(--text-muted)" }}>
               Passing % (1–100)
             </label>
             <input
@@ -163,74 +163,69 @@ export default function AdminDomainsPage() {
               max={100}
               value={newPercent}
               onChange={(e) => setNewPercent(Number(e.target.value))}
-              className="w-24 rounded-sm border bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--tag-amber)]"
-              style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+              className="w-24 rounded-lg border px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+              style={{ borderColor: "var(--border)", color: "var(--text)" }}
             />
           </div>
           <button
             type="submit"
             disabled={creating || !newTitle.trim()}
-            className="font-display rounded-sm px-4 py-2.5 text-sm tracking-wide transition disabled:opacity-50"
-            style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+            className="rounded-lg px-4 py-2.5 text-sm font-semibold text-white transition disabled:opacity-50"
+            style={{ backgroundColor: "var(--dark)" }}
           >
             {creating ? "Adding…" : "Add domain"}
           </button>
         </form>
 
         {actionError && (
-          <div
-            role="alert"
-            className="mb-4 rounded-sm border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}
-          >
+          <div role="alert" className="mb-4 rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             {actionError}
           </div>
         )}
 
         {loading ? (
-          <p className="text-sm" style={{ color: "var(--muted)" }}>Loading…</p>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>Loading…</p>
         ) : error ? (
-          <div
-            role="alert"
-            className="rounded-sm border px-3 py-2 text-sm"
-            style={{ borderColor: "var(--err)", color: "var(--err)", backgroundColor: "rgba(226,87,76,0.08)" }}
-          >
+          <div role="alert" className="rounded-lg px-3 py-2 text-sm" style={{ backgroundColor: "var(--critical-bg)", color: "var(--critical-text)" }}>
             {error}
           </div>
         ) : domains.length === 0 ? (
-          <p className="text-sm" style={{ color: "var(--muted)" }}>
+          <p className="text-sm" style={{ color: "var(--text-muted)" }}>
             No domains yet — add your first one above.
           </p>
         ) : (
-          <div className="flex flex-col gap-2">
+          <div className="flex flex-col gap-3">
             {domains.map((d, index) => (
               <div
                 key={d.id}
-                className="flex items-center gap-3 rounded-sm border p-3"
-                style={{ borderColor: "var(--panel-border)", backgroundColor: "var(--panel)" }}
+                className="flex items-center gap-3 rounded-2xl border p-4 shadow-sm"
+                style={{ borderColor: "var(--border)", backgroundColor: "var(--surface)" }}
               >
                 <div className="flex flex-col gap-1">
                   <button
                     onClick={() => handleMove(index, -1)}
                     disabled={index === 0}
-                    className="rounded-sm border px-1.5 text-xs disabled:opacity-30"
-                    style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+                    className="rounded-md border px-1.5 text-xs disabled:opacity-30"
+                    style={{ borderColor: "var(--border)", color: "var(--text)" }}
                   >
                     ▲
                   </button>
                   <button
                     onClick={() => handleMove(index, 1)}
                     disabled={index === domains.length - 1}
-                    className="rounded-sm border px-1.5 text-xs disabled:opacity-30"
-                    style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+                    className="rounded-md border px-1.5 text-xs disabled:opacity-30"
+                    style={{ borderColor: "var(--border)", color: "var(--text)" }}
                   >
                     ▼
                   </button>
                 </div>
 
-                <span className="font-mono-tag w-8 text-xs" style={{ color: "var(--muted)" }}>
-                  #{d.order}
-                </span>
+                <div
+                  className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-xs font-semibold"
+                  style={{ backgroundColor: "var(--primary-soft-bg)", color: "var(--primary-soft-text)" }}
+                >
+                  {d.order}
+                </div>
 
                 {editingId === d.id ? (
                   <div className="flex flex-1 flex-wrap items-center gap-2">
@@ -238,8 +233,8 @@ export default function AdminDomainsPage() {
                       type="text"
                       value={editTitle}
                       onChange={(e) => setEditTitle(e.target.value)}
-                      className="flex-1 rounded-sm border bg-transparent px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-[var(--tag-amber)]"
-                      style={{ borderColor: "var(--panel-border)", color: "var(--paper)", minWidth: "120px" }}
+                      className="flex-1 rounded-lg border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      style={{ borderColor: "var(--border)", color: "var(--text)", minWidth: "120px" }}
                     />
                     <input
                       type="number"
@@ -247,20 +242,20 @@ export default function AdminDomainsPage() {
                       max={100}
                       value={editPercent}
                       onChange={(e) => setEditPercent(Number(e.target.value))}
-                      className="w-20 rounded-sm border bg-transparent px-2 py-1 text-sm outline-none focus:ring-2 focus:ring-[var(--tag-amber)]"
-                      style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+                      className="w-20 rounded-lg border px-2 py-1.5 text-sm outline-none focus:ring-2 focus:ring-[var(--primary)]"
+                      style={{ borderColor: "var(--border)", color: "var(--text)" }}
                     />
                     <button
                       onClick={() => saveEdit(d.id)}
-                      className="font-display rounded-sm px-3 py-1 text-xs"
-                      style={{ backgroundColor: "var(--tag-amber)", color: "var(--ink)" }}
+                      className="rounded-lg px-3 py-1.5 text-xs font-semibold text-white"
+                      style={{ backgroundColor: "var(--dark)" }}
                     >
                       Save
                     </button>
                     <button
                       onClick={() => setEditingId(null)}
-                      className="rounded-sm border px-3 py-1 text-xs"
-                      style={{ borderColor: "var(--panel-border)", color: "var(--muted)" }}
+                      className="rounded-lg border px-3 py-1.5 text-xs font-medium"
+                      style={{ borderColor: "var(--border)", color: "var(--text-muted)" }}
                     >
                       Cancel
                     </button>
@@ -268,22 +263,32 @@ export default function AdminDomainsPage() {
                 ) : (
                   <>
                     <div className="flex-1">
-                      <span style={{ color: "var(--paper)" }}>{d.title}</span>
-                      <span className="ml-3 text-xs" style={{ color: "var(--muted)" }}>
-                        {d.passing_criteria_percent}% to pass
-                      </span>
+                      <span className="font-medium" style={{ color: "var(--text)" }}>{d.title}</span>
                     </div>
+                    <span
+                      className="rounded-full px-3 py-1 text-xs font-medium"
+                      style={{ backgroundColor: "var(--primary-soft-bg)", color: "var(--primary-soft-text)" }}
+                    >
+                      {d.passing_criteria_percent}% to pass
+                    </span>
+                    <Link
+                      href={`/domains/${d.id}/questions`}
+                      className="rounded-lg border px-2 py-1.5 text-xs font-medium"
+                      style={{ borderColor: "var(--border)", color: "var(--primary)" }}
+                    >
+                      Questions →
+                    </Link>
                     <button
                       onClick={() => startEdit(d)}
-                      className="rounded-sm border px-2 py-1 text-xs"
-                      style={{ borderColor: "var(--panel-border)", color: "var(--paper)" }}
+                      className="rounded-lg border px-2 py-1.5 text-xs font-medium"
+                      style={{ borderColor: "var(--border)", color: "var(--text)" }}
                     >
                       Edit
                     </button>
                     <button
                       onClick={() => handleDelete(d)}
-                      className="rounded-sm border px-2 py-1 text-xs"
-                      style={{ borderColor: "var(--err)", color: "var(--err)" }}
+                      className="rounded-lg border px-2 py-1.5 text-xs font-medium"
+                      style={{ borderColor: "var(--critical-text)", color: "var(--critical-text)" }}
                     >
                       Delete
                     </button>
