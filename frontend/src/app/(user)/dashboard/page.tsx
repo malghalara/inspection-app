@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth-context";
 
 export default function DashboardPage() {
-  const { accessToken, isInitialized, logout } = useAuth();
+  const { accessToken, role, isInitialized, logout } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
@@ -28,16 +28,37 @@ export default function DashboardPage() {
       <p className="max-w-sm text-center text-sm" style={{ color: "var(--text-muted)" }}>
         This is a placeholder confirming the login flow works end to end. The real dashboard gets built in a later phase.
       </p>
-      <button
-        onClick={async () => {
-          await logout();
-          router.push("/login");
-        }}
-        className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
-        style={{ backgroundColor: "var(--dark)" }}
-      >
-        Log out
-      </button>
+
+      <div className="flex gap-3">
+        {role === "admin" ? (
+          <button
+            onClick={() => router.push("/domains")}
+            className="rounded-lg px-4 py-2 text-sm font-semibold"
+            style={{ backgroundColor: "var(--primary)", color: "white" }}
+          >
+            Manage domains
+          </button>
+        ) : role === "user" ? (
+          <button
+            onClick={() => router.push("/inspection")}
+            className="rounded-lg px-4 py-2 text-sm font-semibold"
+            style={{ backgroundColor: "var(--primary)", color: "white" }}
+          >
+            Go to inspection
+          </button>
+        ) : null}
+
+        <button
+          onClick={async () => {
+            await logout();
+            router.push("/login");
+          }}
+          className="rounded-lg px-4 py-2 text-sm font-semibold text-white"
+          style={{ backgroundColor: "var(--dark)" }}
+        >
+          Log out
+        </button>
+      </div>
     </div>
   );
 }
